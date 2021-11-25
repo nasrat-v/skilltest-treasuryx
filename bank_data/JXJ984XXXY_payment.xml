@@ -1,0 +1,23 @@
+  <Document>
+      <GrpHdr>
+          <MsgId>JXJ984XXXY</MsgId>
+          <CreDtTm>2021-11-26 00:12:16.95030887 +0100 CET m=+6.211403724</CreDtTm>
+      </GrpHdr>
+      <Cdtr>
+          <Nm>beneficiary</Nm>
+          <CdtrAcct>
+              <Id>
+                  <IBAN>DE65500105179799248552</IBAN>
+              </Id>
+          </CdtrAcct>
+      </Cdtr>
+      <Dbtr>
+          <Nm>qaa</Nm>
+          <CdtrAcct>
+              <Id>
+                  <IBAN>FR1112739000504482744411A64</IBAN>
+              </Id>
+          </CdtrAcct>
+      </Dbtr>
+      <Amt>43.99</Amt>
+  </Document>
