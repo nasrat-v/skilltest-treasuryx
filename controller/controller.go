@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"skilltest-treasuryx/bank"
 	"skilltest-treasuryx/database"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -41,6 +43,7 @@ func (x *Controller) Payment(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"message": errorMsg,
 		})
+		return
 	}
 	// Check if creditor and debtor accounts exist in db. If not, create missing
 	creditorAccount, debtorAccount, err := x.findOrCreateCreditorDebtorAccounts(paymentReq)
@@ -49,16 +52,46 @@ func (x *Controller) Payment(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
+		return
 	}
 	// Create payment in db with accounts ids
 	payment, err := x.createPaymentFromAccounts(creditorAccount.Id, debtorAccount.Id, paymentReq)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") { // check for doublon
+			status = http.StatusBadRequest
+		}
+		context.Abort()
+		context.JSON(status, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	// Create Bank XML File
+	err = bank.CreateXmlFile(bank.MarshalDocument(creditorAccount, debtorAccount, payment))
 	if err != nil {
 		context.Abort()
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
+		return
+	} else {
+		context.JSON(http.StatusOK, gin.H{
+			"message": "Payment successfully transmited to the bank",
+		})
 	}
-	fmt.Println(payment)
+	// Get Bank response
+	status, err := bank.GetBankStatusResponse(payment.IdempotencyUniqueKey)
+	if err != nil {
+		return
+	}
+	// Update Payment status in db
+	if status != "" {
+		_, err := x._database.UpdatePaymentStatusByIdempotency(status, payment.IdempotencyUniqueKey)
+		if err != nil {
+			return
+		}
+	}
 }
 
 func (x *Controller) decodePaymentRequest(body io.ReadCloser) (PaymentRequest, error) {

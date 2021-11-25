@@ -57,7 +57,7 @@ func (x *Database) createTables() error {
 		"debtorId" INTEGER NOT NULL,
 		"creditorId" INTEGER NOT NULL,
 		"ammount" REAL NOT NULL,
-		"idempotencyUniqueKey" TEXT NOT NULL,
+		"idempotencyUniqueKey" TEXT UNIQUE NOT NULL,
 		"status" TEXT NOT NULL
 	);`
 	statementAccount, err := x._sqliteDatabase.Prepare(createAccountTableSQL) // Prepare SQL Statement
