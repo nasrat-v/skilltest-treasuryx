@@ -1,9 +1,11 @@
 package controller
 
 import (
-	"skilltest-treasuryx/database"
+	"skilltest-treasuryx/src/database"
 )
 
+// Find creditor and debtor account
+// If not found, create them
 func (x *Controller) findOrCreateCreditorDebtorAccounts(paymentReq PaymentRequest) (database.Account, database.Account, error) {
 	creditorAccount, err := x.findOrCreateAccount(database.Account{
 		Iban: paymentReq.CreditorIban,

@@ -1,7 +1,8 @@
 package controller
 
-import "skilltest-treasuryx/database"
+import "skilltest-treasuryx/src/database"
 
+// Create payment with creditor and debtor infos
 func (x *Controller) createPaymentFromAccounts(creditorId int, debtorId int, paymentReq PaymentRequest) (database.Payment, error) {
 	return x._database.InsertPayment(database.Payment{
 		CreditorId:           creditorId,

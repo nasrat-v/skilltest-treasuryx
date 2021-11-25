@@ -1,31 +1,24 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"skilltest-treasuryx/manager"
+	"skilltest-treasuryx/src/manager"
 
 	"github.com/joho/godotenv"
 )
 
 func checkEnv() error {
-	/*x._brokerApiURL = os.Getenv("BROKER_API_URL")
-	x._triggersDirname = os.Getenv("TRIGGERS_DIRNAME")
-	x._eventsDirname = os.Getenv("EVENTS_DIRNAME")
-	x._recordingsDirname = os.Getenv("RECORDINGS_DIRNAME")
+	bankFolder := os.Getenv("BANK_FOLDER")
+	sqliteDbFileLocation := os.Getenv("SQLITE_DB_FILE_LOCATION")
 
-	if x._brokerApiURL == "" {
-		return errors.New("error: No BrokerAPI URL provided")
+	if bankFolder == "" {
+		return errors.New("error: No BANK_FOLDER env variable provided")
 	}
-	if x._triggersDirname == "" {
-		return errors.New("error: No Triggers directory name provided")
+	if sqliteDbFileLocation == "" {
+		return errors.New("error: No SQLITE_DB_FILE_LOCATION env variable provided")
 	}
-	if x._eventsDirname == "" {
-		return errors.New("error: No Events directory name provided")
-	}
-	if x._recordingsDirname == "" {
-		return errors.New("error: No Recordings directory name provided")
-	}*/
 	return nil
 }
 
@@ -34,17 +27,17 @@ func main() {
 
 	if err := checkEnv(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(-2)
+		os.Exit(3)
 	}
 
 	var serviceManager manager.ServiceManager
 
 	if err := serviceManager.Create(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(-1)
+		os.Exit(2)
 	}
 	if err := serviceManager.Start(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(-1)
+		os.Exit(1)
 	}
 }

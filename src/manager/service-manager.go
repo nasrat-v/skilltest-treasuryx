@@ -1,9 +1,9 @@
 package manager
 
 import (
-	"skilltest-treasuryx/database"
-	"skilltest-treasuryx/router"
-	"skilltest-treasuryx/server"
+	"skilltest-treasuryx/src/database"
+	"skilltest-treasuryx/src/router"
+	"skilltest-treasuryx/src/server"
 )
 
 type ServiceManager struct {
@@ -17,6 +17,7 @@ func New() ServiceManager {
 	return ServiceManager{}
 }
 
+// Initialise services like database driver, server, router and controller
 func (x *ServiceManager) Create() error {
 	if err := x._database.Create(); err != nil {
 		return err
@@ -26,6 +27,7 @@ func (x *ServiceManager) Create() error {
 	return nil
 }
 
+// Start server
 func (x *ServiceManager) Start() error {
 	x._router.LoadRoutes(x._server.Engine)
 	defer x._database.Close() // defer Database closing

@@ -1,7 +1,7 @@
   <Document>
       <GrpHdr>
-          <MsgId>JXJ984XXXZ</MsgId>
-          <CreDtTm>2021-11-25 22:32:12.24763144 +0100 CET m=+3.724078961</CreDtTm>
+          <MsgId>JXJ984XXXY</MsgId>
+          <CreDtTm>2021-11-25 23:36:47.769562102 +0100 CET m=+8.677211756</CreDtTm>
       </GrpHdr>
       <Cdtr>
           <Nm>beneficiary</Nm>
@@ -19,5 +19,5 @@
               </Id>
           </CdtrAcct>
       </Dbtr>
-      <Amt>42.99</Amt>
+      <Amt>43.99</Amt>
   </Document>

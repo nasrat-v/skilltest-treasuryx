@@ -4,6 +4,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Fetch payment data from IdempotencyUniqueKey
 func (x *Database) GetPaymentByIdempotency(idempotency string) (Payment, error) {
 	payment := Payment{}
 
@@ -30,6 +31,7 @@ func (x *Database) GetPaymentByIdempotency(idempotency string) (Payment, error) 
 	return payment, nil
 }
 
+// Create new payment in db
 func (x *Database) InsertPayment(payment Payment) (Payment, error) {
 	stmt, err := x._sqliteDatabase.Prepare(
 		"INSERT INTO payment (id, debtorId, creditorId, ammount, idempotencyUniqueKey, status) VALUES (?, ?, ?, ?, ?, ?)")
@@ -50,6 +52,7 @@ func (x *Database) InsertPayment(payment Payment) (Payment, error) {
 	return x.GetPaymentByIdempotency(payment.IdempotencyUniqueKey) // fetch again to get freshly inserted account
 }
 
+// Update payment data from IdempotencyUniqueKey
 func (x *Database) UpdatePaymentStatusByIdempotency(status string, idempotency string) (Payment, error) {
 	stmt, err := x._sqliteDatabase.Prepare("UPDATE payment SET status = ? WHERE idempotencyUniqueKey = '" + idempotency + "'")
 	if err != nil {

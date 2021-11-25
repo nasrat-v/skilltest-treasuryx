@@ -4,6 +4,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Fetch account data from IBAN
 func (x *Database) GetAccountByIban(iban string) (Account, error) {
 	account := Account{}
 
@@ -21,6 +22,7 @@ func (x *Database) GetAccountByIban(iban string) (Account, error) {
 	return account, nil
 }
 
+// Create new account in db
 func (x *Database) InsertAccount(account Account) (Account, error) {
 	stmt, err := x._sqliteDatabase.Prepare("INSERT INTO account (id, iban, name) VALUES (?, ?, ?)")
 	if err != nil {

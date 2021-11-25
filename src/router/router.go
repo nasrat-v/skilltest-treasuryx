@@ -1,9 +1,9 @@
 package router
 
 import (
-	"skilltest-treasuryx/controller"
-	"skilltest-treasuryx/database"
-	"skilltest-treasuryx/middleware"
+	"skilltest-treasuryx/src/controller"
+	"skilltest-treasuryx/src/database"
+	"skilltest-treasuryx/src/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +21,7 @@ func (x *Router) Create(database *database.Database) {
 	x._controller.Create(database)
 }
 
+// Initialise routes with controllers handlers
 func (x *Router) LoadRoutes(server *gin.Engine) {
 	converter := server.Group("/api")
 	{

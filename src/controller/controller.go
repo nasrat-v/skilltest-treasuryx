@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"skilltest-treasuryx/bank"
-	"skilltest-treasuryx/database"
+	"skilltest-treasuryx/src/bank"
+	"skilltest-treasuryx/src/database"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +29,7 @@ func (x *Controller) Create(database *database.Database) {
 	x._database = database
 }
 
+// Payment Handler
 func (x *Controller) Payment(context *gin.Context) {
 	errorMsg := "Bad Request"
 
@@ -45,7 +46,7 @@ func (x *Controller) Payment(context *gin.Context) {
 		})
 		return
 	}
-	// Check if creditor and debtor accounts exist in db. If not, create missing
+	// Check if creditor and debtor accounts exist in db. If not, create them
 	creditorAccount, debtorAccount, err := x.findOrCreateCreditorDebtorAccounts(paymentReq)
 	if err != nil {
 		context.Abort()
@@ -68,7 +69,7 @@ func (x *Controller) Payment(context *gin.Context) {
 		return
 	}
 	// Create Bank XML File
-	err = bank.CreateXmlFile(bank.MarshalDocument(creditorAccount, debtorAccount, payment))
+	err = bank.CreateXmlFile(payment.IdempotencyUniqueKey, bank.MarshalDocument(creditorAccount, debtorAccount, payment))
 	if err != nil {
 		context.Abort()
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -80,20 +81,11 @@ func (x *Controller) Payment(context *gin.Context) {
 			"message": "Payment successfully transmited to the bank",
 		})
 	}
-	// Get Bank response
-	status, err := bank.GetBankStatusResponse(payment.IdempotencyUniqueKey)
-	if err != nil {
-		return
-	}
-	// Update Payment status in db
-	if status != "" {
-		_, err := x._database.UpdatePaymentStatusByIdempotency(status, payment.IdempotencyUniqueKey)
-		if err != nil {
-			return
-		}
-	}
+	// Launch go routine to wait for bank response
+	go x.bankResponseForPayment(payment.IdempotencyUniqueKey)
 }
 
+// Decode body request from payment handler
 func (x *Controller) decodePaymentRequest(body io.ReadCloser) (PaymentRequest, error) {
 	var paymentReq PaymentRequest
 
