@@ -8,8 +8,8 @@ type Account struct {
 
 type Payment struct {
 	Id                   int
-	DebtorId             string
-	CreditorId           string
+	DebtorId             int
+	CreditorId           int
 	Ammount              float64
 	IdempotencyUniqueKey string
 	Status               string

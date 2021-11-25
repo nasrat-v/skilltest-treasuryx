@@ -30,8 +30,9 @@ func (x *Controller) Create(database *database.Database) {
 func (x *Controller) Payment(context *gin.Context) {
 	errorMsg := "Bad Request"
 
-	payment, err := x.decodePaymentRequest(context.Request.Body)
-	errValidator := x._validate.Struct(payment)
+	paymentReq, err := x.decodePaymentRequest(context.Request.Body)
+	// Validate body
+	errValidator := x._validate.Struct(paymentReq)
 	if err != nil || errValidator != nil {
 		if errValidator != nil {
 			errorMsg = errValidator.Error()
@@ -41,29 +42,33 @@ func (x *Controller) Payment(context *gin.Context) {
 			"message": errorMsg,
 		})
 	}
-	// check if creditor and debtor account exist and get id
-	// if not create it
-	x.findOrCreateAccounts(payment)
+	// Check if creditor and debtor accounts exist in db. If not, create missing
+	creditorAccount, debtorAccount, err := x.findOrCreateCreditorDebtorAccounts(paymentReq)
+	if err != nil {
+		context.Abort()
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+	}
+	// Create payment in db with accounts ids
+	payment, err := x.createPaymentFromAccounts(creditorAccount.Id, debtorAccount.Id, paymentReq)
+	if err != nil {
+		context.Abort()
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+	}
+	fmt.Println(payment)
 }
 
-func (x *Controller) findOrCreateAccounts(payment Payment) {
-	account := database.Account{
-		Name: payment.CreditorName,
-		Iban: payment.CreditorIban,
-	}
-	if err := x._database.InsertAccount(account); err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-	}
-}
-
-func (x *Controller) decodePaymentRequest(body io.ReadCloser) (Payment, error) {
-	var payment Payment
+func (x *Controller) decodePaymentRequest(body io.ReadCloser) (PaymentRequest, error) {
+	var paymentReq PaymentRequest
 
 	decoder := json.NewDecoder(body)
-	err := decoder.Decode(&payment)
+	err := decoder.Decode(&paymentReq)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		return payment, err
+		return paymentReq, err
 	}
-	return payment, nil
+	return paymentReq, nil
 }

@@ -49,16 +49,16 @@ func (x *Database) createFile() error {
 func (x *Database) createTables() error {
 	createAccountTableSQL := `CREATE TABLE account (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,		
-		"iban" TEXT,
-		"name" TEXT
+		"iban" TEXT UNIQUE NOT NULL,
+		"name" TEXT NOT NULL
 		);`
-	createPaymentTableSQL := `CREATE TABLE account (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"debtorId" integer,
-		"creditorId" integer,
-		"ammount" REAL,
-		"idempotencyUniqueKey" TEXT,
-		"status" TEXT
+	createPaymentTableSQL := `CREATE TABLE payment (
+		"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"debtorId" INTEGER NOT NULL,
+		"creditorId" INTEGER NOT NULL,
+		"ammount" REAL NOT NULL,
+		"idempotencyUniqueKey" TEXT NOT NULL,
+		"status" TEXT NOT NULL
 	);`
 	statementAccount, err := x._sqliteDatabase.Prepare(createAccountTableSQL) // Prepare SQL Statement
 	if err != nil {
