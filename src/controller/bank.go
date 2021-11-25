@@ -11,7 +11,8 @@ func (x *Controller) bankResponseForPayment(idempotency string) error {
 	if err != nil {
 		return err
 	}
-	for !fileExist { // Iterate until we found the file
+	// Iterate until we found the file and the payment id is found inside
+	for !fileExist || (status == "" && err == nil) {
 		time.Sleep(time.Second)
 		return x.bankResponseForPayment(idempotency) // Recursivity
 	}

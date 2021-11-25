@@ -6,6 +6,7 @@ import (
 	"os"
 	"skilltest-treasuryx/src/manager"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -24,6 +25,7 @@ func checkEnv() error {
 
 func main() {
 	godotenv.Load()
+	gin.SetMode(os.Getenv("GIN_MODE"))
 
 	if err := checkEnv(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
