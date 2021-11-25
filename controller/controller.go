@@ -6,11 +6,15 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"skilltest-treasuryx/database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type Controller struct {
+	_validate *validator.Validate
+	_database *database.Database
 }
 
 // default constructor
@@ -18,47 +22,38 @@ func New() Controller {
 	return Controller{}
 }
 
+func (x *Controller) Create(database *database.Database) {
+	x._validate = validator.New()
+	x._database = database
+}
+
 func (x *Controller) Payment(context *gin.Context) {
-	_, err := x.decodePaymentRequest(context.Request.Body)
-	if err != nil {
+	errorMsg := "Bad Request"
+
+	payment, err := x.decodePaymentRequest(context.Request.Body)
+	errValidator := x._validate.Struct(payment)
+	if err != nil || errValidator != nil {
+		if errValidator != nil {
+			errorMsg = errValidator.Error()
+		}
 		context.Abort()
-		//context.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
 		context.JSON(http.StatusBadRequest, gin.H{
-			"message": "Bad request",
+			"message": errorMsg,
 		})
 	}
-	/*if body := x.validateUploadRecordingForm(context); body == nil {
-		return
-	} else {
-		defer body.File.Close()
-		/*triggerInstanceId := context.Param("trigger_instance_id")
+	// check if creditor and debtor account exist and get id
+	// if not create it
+	x.findOrCreateAccounts(payment)
+}
 
-		event, err := x.findEventByUniqueEvent(context, body.UniqueEventId)
-		if err != nil {
-			return
-		}
-		eventId := strconv.Itoa(event.Id)
-		metadatum, err := x.findMetadatumByEvent(context, eventId)
-		if err != nil {
-			return
-		}
-		metadatumId := strconv.Itoa(metadatum.Id)
-		recording, err := x.createRecording(context, eventId, metadatumId, body.RecordingType)
-		if err != nil {
-			return
-		}
-		recordingId := strconv.Itoa(recording.Id)
-		zip, err := x.unzipArchive(context, body)
-		if err != nil {
-			return
-		}
-		destPath := x.fullFilepath(triggerInstanceId, eventId, recordingId)
-		fullpath, err := x.uploadUnzippedArchive(context, destPath, zip)
-		if err != nil {
-			return
-		}
-		x.saveCloudInfos(context, recordingId, fullpath)
-	}*/
+func (x *Controller) findOrCreateAccounts(payment Payment) {
+	account := database.Account{
+		Name: payment.CreditorName,
+		Iban: payment.CreditorIban,
+	}
+	if err := x._database.InsertAccount(account); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
 }
 
 func (x *Controller) decodePaymentRequest(body io.ReadCloser) (Payment, error) {
@@ -66,9 +61,8 @@ func (x *Controller) decodePaymentRequest(body io.ReadCloser) (Payment, error) {
 
 	decoder := json.NewDecoder(body)
 	err := decoder.Decode(&payment)
-	fmt.Println(payment)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err.Error())
 		return payment, err
 	}
 	return payment, nil

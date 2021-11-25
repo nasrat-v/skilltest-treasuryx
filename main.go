@@ -39,7 +39,10 @@ func main() {
 
 	var serviceManager manager.ServiceManager
 
-	serviceManager.Create()
+	if err := serviceManager.Create(); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(-1)
+	}
 	if err := serviceManager.Start(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(-1)
